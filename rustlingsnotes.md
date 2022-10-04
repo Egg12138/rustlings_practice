@@ -18,6 +18,51 @@
 
 `const`和`let`是地位等同的。
 
+
+### primitive types
+
+rust中的`new`方法是开辟堆内存的规范方法接口。
+`let a: slice = .......`的切片需要对其引用进行`let b = &a[.........]`，因为slice内部可能可变，所以我们用引用。
+
+且rust直接*解压*
+
+#### 动态数组
+我们这样实现一个广播，如果是用`map`，我们再这个闭包里面得到的`item`并不是引用，可以发现其类型就是`i32`.如果熟悉rs的所有权就很清楚了，这里肯定是直接返回`item * 2`. 不能是`item *= 2`.
+rs问map的描述:
+> If you have an iterator that gives you elements of some type A, and you want an iterator of some other type B, you can use map(), passing a closure that takes an A and returns a B.
+```rust
+fn boardcast_map(v: &Vec<i32>) -> Vec<i32> {
+
+    v.iter().map(|item| {
+        item * 2
+    }).collect::<Vec<i32>>()
+
+}
+
+```
+并且得到`struct map`后还要通过`collect::<Vec<i32>>`这个`collect` + turbofish expr来转化。
+
+而如果是迭代地:
+```rust
+for item: &mut i32 in v.iter_mut(){
+	item *= 2;
+}
+```
+这样就可以，且是对原`v`直接修改
+
+下标索引两种方法：
+* `v.get(index)`
+* `&v[index]`
+前者性能会由轻微所耗但是会做边界检查。返回的是`Option`.
+
+多借用。
+
+
+
+
+
+
+
 ### 字面量
 Rust 中有两种字符串，`String` 和 `&str`，其中 `String` 可动态分配、修改，内部实现可以理解为 `Vec<u8>`，而 `&str` 是一个类型为 `&[u8]` 的切片。这两种字符串都只能保存合法的 UTF-8 字符。
 
