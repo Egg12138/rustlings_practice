@@ -11,7 +11,7 @@
 
 
 fn main() {
-    println!("Hello and");
+    println!(r#"Hello and"#);
     println!(r#"       welcome to...                      "#);
     println!(r#"                 _   _ _                  "#);
     println!(r#"  _ __ _   _ ___| |_| (_)_ __   __ _ ___  "#);
