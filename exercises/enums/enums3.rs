@@ -12,10 +12,12 @@ enum Message {
     
 }
 
+
 struct Point {
     x: u8,
     y: u8,
 }
+
 
 struct State {
     color: (u8, u8, u8),

@@ -86,6 +86,41 @@ rust字符串字面量不仅支持ASCII转义，还支持对Unicode转义.
 转化raw string则需要使用`r`(raw)开头，且头尾用同样多的`#`。`#`用来框定raw string的范围。
 
 
+### MODULES
+E0603:
+> import const if private
+
+我们需要将`const`也添加`pub`关键词
+```rust
+mod delicious_snacks {
+    // TODO: Fix these use statements
+    use self::fruits::PEAR as fruit;
+    use self::veggies::CUCUMBER as veggie;
+
+    pub mod fruits {
+        pub const PEAR: &'static str = "Pear";
+        pub const APPLE: &'static str = "Apple";
+    }
+
+    pub mod veggies {
+        pub const CUCUMBER: &'static str = "Cucumber";
+        pub const CARROT: &'static str = "Carrot";
+    }
+}
+```
+```rust
+        delicious_snacks::fruits::PEAR,
+        delicious_snacks::veggies::CUCUMBER
+```
+这样可以
+但是如果
+```rust
+        delicious_snacks::fruit,        delicious_snacks::veggie
+```
+则出现"private constant import"
+
+同样我们只要在`use`前加上`pub`即可
+
 
 
 
