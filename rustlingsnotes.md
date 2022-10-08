@@ -129,5 +129,7 @@ mod delicious_snacks {
 ### Error Handling
 `Result<T,E>`具体来可以是`Result<T,T>`
 
+**errors6.rs** 和其他的自定义错误处理系统的代码值得学一下。
+
 
 
