@@ -18,7 +18,7 @@
 
 `const`和`let`是地位等同的。
 
-
+..= 语法允许你匹配一个闭区间序列内的值
 ### primitive types
 
 rust中的`new`方法是开辟堆内存的规范方法接口。
@@ -126,7 +126,8 @@ mod delicious_snacks {
 同样我们只要在`use`前加上`pub`即可
 
 
-
+### Error Handling
+`Result<T,E>`具体来可以是`Result<T,T>`
 
 
 
