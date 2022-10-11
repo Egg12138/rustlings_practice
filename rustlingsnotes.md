@@ -220,3 +220,10 @@ let iterator_c = raw_str.iter();
 let string = iterator_c.map(|&x| x as u8).collect()
 ```
 
+```rust
+pub fn capitalize_words_string(words: &[&str]) -> String {
+    let mut news = String::new();
+    let &w = words;
+```
+这样的写法是因为，`[&str]`仍然是一个DST，所以还需要一个引用
+
