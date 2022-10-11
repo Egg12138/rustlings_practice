@@ -209,5 +209,14 @@ pub multitraits(arg1: impl Trait1 + Trait2, arg2: impl Trait2 + Trait3)
 pub multitraits_sametype<T: Trait1 + Trait2, U: Trait2 + Trait3>(arg1: T, arg2: U)
 ```
 
+### Iterator
 
+迭代器可以直接用`.iter()`获得, 我们可以对其使用`.next()`关联函数
+
+String 可以通过`collect`来得到。因为她本质是`Vec<u8>`
+所以对于一个字符迭代器:
+```rust
+let iterator_c = raw_str.iter();
+let string = iterator_c.map(|&x| x as u8).collect()
+```
 
