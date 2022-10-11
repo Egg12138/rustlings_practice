@@ -133,3 +133,81 @@ mod delicious_snacks {
 
 
 
+### generics && traits
+
+注意，我们是需要`impl<T,U,...> struct<T>`的。这样struct才能用到`T,U,...`等泛型。`impl`的泛型可以比后面跟的 struct自身泛型更多，因为impl的函数也可以接受其他泛型参数。
+```rust
+impl<T> Wrapper<T> {
+    pub fn new<T>(value: T) -> Wrapper<T> {
+        Wrapper { value }
+    }
+}
+```
+上面是一个有问题的泛型定义。因为rustc在这里认为`new<T>`声明了一个新的泛型签名。删去即可。
+并且`Point<T>`和`Point`不是一回事了。
+
+rust不在方法签名和类型定义上做类型推导。所以静态方法调用时，可以要在结构体后面用 Turbofish 提供具体的泛型参数。如果不添加的化要保证rustc能够推导出类型来。
+
+```rust
+trait AppendBar {
+    fn append_bar(self) -> Self;
+}
+
+impl AppendBar for String {
+    //Add your code here
+    fn append_bar(mut self) -> Self {
+        self.push_str("Bar");
+        self
+    }
+}
+```
+特征声明时`mut`不应该被引入。 rust 默认实现`#[deny(patterns_in_fns_without_body)]`
+
+> The patterns_in_fns_without_body lint detects mut identifier patterns as a parameter in functions without a body.
+```rust
+trait Trait {
+    fn foo(mut arg: u8);
+}
+{{produces}}
+```
+
+> Explanation
+> To fix this, remove mut from the parameter in the trait definition; it can be used in the implementation. That is, the following is OK:
+```rust
+trait Trait {
+    fn foo(arg: u8); // Removed `mut` here
+}
+
+impl Trait for i32 {
+    fn foo(mut arg: u8) { // `mut` here is OK
+
+    }
+}
+```
+> The parameter names in the body-less functions are only allowed to be _ or an identifier for documentation purposes (only the type is relevant).
+
+issuse 35203:
+> They are ignored and useless. If some pattern is written in the trait, or foreign fn, or fn pointer position it's either a mistake/misunderstanding (all examples found by crater) or some macro expanding into both trait definition and implementations (this wasn't possible before Accept interpolated patterns in trait method parameters #45775).
+> Technical reason - we don't want to check these patterns. Patterns are checked in bodies and fn pointers etc don't have bodies and we don't want to create bodies for them only to check something as useless as patterns that are ignored otherwise.
+
+
+默认 `trait` 实现后可以通过这样限定参数为都实现了同一个 trait 的类型，但不一定是要同一种类型:
+```rust 
+fn compare_license_types(software: impl Licensed, software_two: impl Licensed)-> bool 
+```
+如果是下面这样，那就是限定了参数为同一类型
+```rust
+fn foo<T: TraitName>(arg1: &T, arg2: &T)
+```
+
+多种 trais:
+```rust
+pub multitraits(arg1: impl Trait1 + Trait2, arg2: impl Trait2 + Trait3)
+```
+或者
+```rust
+pub multitraits_sametype<T: Trait1 + Trait2, U: Trait2 + Trait3>(arg1: T, arg2: U)
+```
+
+
+
