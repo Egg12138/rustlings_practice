@@ -225,5 +225,43 @@ pub fn capitalize_words_string(words: &[&str]) -> String {
     let mut news = String::new();
     let &w = words;
 ```
+
 这样的写法是因为，`[&str]`仍然是一个DST，所以还需要一个引用
 
+注意经常经常出现的`required by a bound...`这个跟泛型推导失败相关的编译器错误。比如一些`map`里，我们引入了`unwrap`那么就有可能会推断不出类型
+
+
+`collect`会转化类型
+```rust
+// Desired output: Ok([1, 11, 1426, 3])
+fn result_with_list() -> Result<Vec<i32>, DivisionError> {
+    let numbers = vec![27, 297, 38502, 81];
+    numbers.into_iter().map(|n| divide(n, 27)).collect()
+}
+
+// Complete the function and return a value of the correct type so the test passes.
+// Desired output: [Ok(1), Ok(11), Ok(1426), Ok(3)]
+fn list_of_results() -> Vec<Result<i32, DivisionError>> {
+    let numbers = vec![27, 297, 38502, 81];
+    numbers.into_iter().map(|n| divide(n, 27)).collect()
+}
+```
+
+rust stdlib提供了`fold`方法，对于递归结构非常好用。
+
+**对类型匹配**
+```rust
+fn count_iterator(map: &HashMap<String, Progress>, value: Progress) -> usize {
+map.values().fold(0_usize, |acc, prog_state| {
+        match prog_state {
+            Progress::Complete => { acc + 1 },
+            _ => { acc },
+        }
+    })
+```
+如果是对值，比如说同样是枚举类型，输入参数可以改变枚举类型，用上述方法就拉了，直接用`filter`才是更高效的:
+```rust
+
+
+
+```
