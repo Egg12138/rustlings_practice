@@ -43,6 +43,6 @@ fn main() {
     match abs_all(&mut input) {
         // TODO
         Cow::Borrowed(_) => println!("I own this slice!"),
-        _ => panic!("expected borrowed value"),
+        _ => panic!("expected borrowed value, actually I have received a value, directly"),
     }
 }
