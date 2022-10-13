@@ -265,3 +265,58 @@ map.values().fold(0_usize, |acc, prog_state| {
 
 
 ```
+
+
+### reviews of smart pointers
+
+现在来考虑`enum Cow`
+```rust
+pub enmu Cow,'a, B>
+where 
+    B: 'a + ToOwned +  ?Sized
+{
+    Borrowed(&'a B),
+    Owned(<B as ToOwned>::Owned),
+}
+```
+如果说我们传入一个类型进入 `Cow`。 传入的是一个引用。那么
+
+当可变时：
+```rust
+pub fn to_mut(&mut self,) -> &mut <B as ToOwned>::Owned {
+    match *self {
+        Borrowed(borred) => {
+            *self = Owned(borred.to_owned());
+            /* snip */
+
+        }, 
+        Owned(red mut owned) => owned,
+    }
+}
+```
+此时内部的惰性克隆开始了，此时借用成了所有。如果原本已经是被所有的，那就不变之。
+
+现在来看一个`Cow::from`的实现(它是不需要引入一个`Cow::new`的，因为内部的empty没有意义。)
+```rust
+// Cow使用了 convert.rs提供的默认from实现
+#[rustc_const_unstable(feature = "const_convert", ...]
+impl<T> const From<!> for T {
+    fn from(T: !) -> T {
+        t
+    }
+} 
+//也就是说，这里的智能指针，只是以枚举形式封装
+Cow::from(&slice); // 传入一个引用, 得到了一个转化为智能指针的引用
+enum Cow<'a, B> 
+where B: 'a + ToOwned + ?Sized// 还必须要是DST???
+{
+    Borrowed(&'a B), // 传入的引用在此
+    Owned(...)// 要更改时为Owned.
+}
+```
+### Threads
+
+**move**关键字从和闭包属于的同一作用域中捕获变量到闭包内，但需要注意，它只决定了捕获后的变量要干啥，没有指定如何捕获它们。
+
+
+我们看看如何控制/调度线程的执行顺序？
