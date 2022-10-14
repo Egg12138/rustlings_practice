@@ -318,5 +318,41 @@ where B: 'a + ToOwned + ?Sized// 还必须要是DST???
 
 **move**关键字从和闭包属于的同一作用域中捕获变量到闭包内，但需要注意，它只决定了捕获后的变量要干啥，没有指定如何捕获它们。
 
+在一般地生产代码种，我们尽量避免使用`unwrap`.而对于`Mutex`而言，`unwrap`是有用的
+我们在调用lock()后紧接着调用的unwrap()方法。标准库中的Mutex有一个被污染（poisoned）的概念。如果一个线程在 mutex 被锁定时 panic 了，我们无法确认Mutex中的值是否仍然有效，因此默认采取的行为是返回一个 error 而不是 guard。所以，Mutex要么返回一个装有值的Ok()变量或者一个 error。可以从文档获取更多的信息。一般而言，并不推荐在生产代码中使用unwrap()方法，但对于Mutex而言却是一个有效的方式——如果一个 Mutex 已经被污染了，我们可能判断出程序状态是无效的，并使程序崩溃。
 
-我们看看如何控制/调度线程的执行顺序？
+另一个关于Mutex 有趣的事情是，只要 Mutex 中的类型是Send，Mutex 就会是Sync。这是因为Mutex确保只有一线程可以访问到内部的值，因此在线程间共享Mutex 是安全的。
+
+我们看看`pub fn send(&self, t: T) -> Result<(), SendError<T>>`在`Sender<T>`中的实现:
+```rust
+pub fn send(&self, t: T) -> Result<(), SendError<T>> {
+
+    let (new_inner, ret) = match *unsafe { self.inner()} 
+    {
+        Flavor::Oneshot(ref p) => {
+            if !p.send() {
+                return p.send(t).map_err(SendError); //发送失败的错误处理
+            } else {
+                // 新的Arc(流)
+                let a = Arc::new(stream::Packet::new());
+                // 在这里还绑定了一个新的 Receiver..?
+                let rx = Receiver::new(Flavor::Stream(a.clone()));
+                match p.upgrade(rx) {
+                   oneshot::UpSuccess => {
+                    let ret = a.send(t);// sure to be success
+                    (a, ret)
+                   } 
+                   oneshot::UpDisconnected => (a, Err(t)), 
+                   oneshot::UpWoke(token) => {
+                    a.send(t).ok().unwrap();
+                    /* snip */
+                   }
+                }
+            }
+        }
+    }
+
+}
+
+
+```
