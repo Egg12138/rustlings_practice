@@ -356,3 +356,36 @@ pub fn send(&self, t: T) -> Result<(), SendError<T>> {
 
 
 ```
+### macros
+
+根据macros宏小册的，我们会对RUST的宏设计理解更深。
+
+`macro_rules!`是不能匹配多种的，因为只要匹配了一种就会返回。
+```rust
+
+macro_rules! my_macro {
+    () => {
+        println!("Check out my macro!");
+    }
+    ($val:expr) => {
+        println!("Look at this other macro: {}", $val);
+    }
+}
+
+fn main() {
+    my_macro!();
+    my_macro!(7777);
+}
+
+
+```
+这样会报错：
+```
+error: no rules expected the token `(`
+  --> exercises/macros/macros4.rs:10:5
+   |
+10 |     ($val:expr) => {
+   |     ^ no rules expected this token in macro call
+
+
+```
