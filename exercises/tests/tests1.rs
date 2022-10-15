@@ -12,6 +12,6 @@
 mod tests {
     #[test]
     fn you_can_assert() {
-        assert!(1 == 2);
+        assert!(2 == 2);
     }
 }
