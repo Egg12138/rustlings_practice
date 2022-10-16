@@ -9,11 +9,13 @@
 use std::num::ParseIntError;
 use std::str::FromStr;
 
+
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
     age: usize,
 }
+
 
 // We will use this error type for the `FromStr` implementation.
 #[derive(Debug, PartialEq)]
@@ -27,6 +29,7 @@ enum ParsePersonError {
     // Wrapped error from parse::<usize>()
     ParseInt(ParseIntError),
 }
+
 
 // I AM NOT DONE
 
@@ -46,7 +49,38 @@ enum ParsePersonError {
 impl FromStr for Person {
     type Err = ParsePersonError;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+    if s.is_empty() {
+        Err(ParsePersonError::Empty)
+    } else {
+        let elements = s.split(',').collect::<Vec<&str>>();
+        // check len == 2?
+        match elements.len() {
+            2 => { 
+             // right branch,
+             // try to parse 
+             // don't need if let, we can directly:
+             let nameof = elements[0];
+             if nameof.is_empty() {
+                Err(ParsePersonError::NoName)
+             } else {
+
+            match elements[1].parse::<usize>() {
+                Ok(ageof) => {
+                    Ok(Person {
+                        name: nameof.to_owned(),
+                        age: ageof,
+                    })
+                },
+                Err(e) => {Err(ParsePersonError::ParseInt(e))}
+            } 
+             }
+            }
+            0 => { Err(ParsePersonError::Empty) },
+            _ => { Err(ParsePersonError::BadLen)}
+
+        }
     }
+}
 }
 
 fn main() {
@@ -58,18 +92,20 @@ fn main() {
 mod tests {
     use super::*;
 
+    // TODO: HERE!
     #[test]
     fn empty_input() {
         assert_eq!("".parse::<Person>(), Err(ParsePersonError::Empty));
     }
+
     #[test]
-    fn good_input() {
-        let p = "John,32".parse::<Person>();
-        assert!(p.is_ok());
-        let p = p.unwrap();
-        assert_eq!(p.name, "John");
-        assert_eq!(p.age, 32);
+    fn invalid_age() {
+        assert!(matches!(
+            "John,twenty".parse::<Person>(),
+            Err(ParsePersonError::ParseInt(_))
+        ));
     }
+
     #[test]
     fn missing_age() {
         assert!(matches!(
@@ -79,11 +115,12 @@ mod tests {
     }
 
     #[test]
-    fn invalid_age() {
-        assert!(matches!(
-            "John,twenty".parse::<Person>(),
-            Err(ParsePersonError::ParseInt(_))
-        ));
+    fn good_input() {
+        let p = "John,32".parse::<Person>();
+        assert!(p.is_ok());
+        let p = p.unwrap();
+        assert_eq!(p.name, "John");
+        assert_eq!(p.age, 32);
     }
 
     #[test]
